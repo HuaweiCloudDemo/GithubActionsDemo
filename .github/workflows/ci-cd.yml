@@ -49,5 +49,5 @@ jobs:
           docker pull $SWR_IMAG
           docker stop DemoWeb || true
           docker rm DemoWeb || true
-          docker run -d -p 80:80 --name DemoWeb $SWR_IMAGE
+          docker run -d -p 8080:80 --name DemoWeb $SWR_IMAGE
         EOF
