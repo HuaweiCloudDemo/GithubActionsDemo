@@ -1,0 +1,53 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Build
+      run: dotnet build --configuration Release
+
+    - name: Publish
+      run: dotnet publish --configuration Release --output ./publish
+
+    - name: Build Docker image
+      run: docker build -t swr.tr-west-1.myhuaweicloud.com/cloudtr/DemoWeb:latest .
+
+    - name: Log in to Huawei SWR
+      run: docker login -u ${{secrets.SWR_USERNAME}} -p ${{secrets.SWR_PASSWORD}} swr.tr-west-1.myhuaweicloud.com 
+
+    - name: Push Docker image
+      run: docker push swr.tr-west-1.myhuaweicloud.com/cloudtr/DemoWeb:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Deploy to ECS
+      env:
+        ECS_HOST: ${{ secrets.ECS_HOST }}
+        ECS_USER: ${{ secrets.ECS_USER }}
+        ECS_PASSWORD: ${{ secrets.ECS_PASSWORD }}
+        SWR_IMAGE: swr.tr-west-1.myhuaweicloud.com/cloudtr/DemoWeb:latest
+      run: |
+        sshpass -p $ECS_PASSWORD ssh -o StrictHostKeyChecking=no $ECS_USER@$ECS_HOST << EOF
+          docker pull $SWR_IMAG
+          docker stop DemoWeb || true
+          docker rm DemoWeb || true
+          docker run -d -p 80:80 --name DemoWeb $SWR_IMAGE
+        EOF
