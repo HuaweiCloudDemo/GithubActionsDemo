@@ -25,13 +25,13 @@ jobs:
       run: dotnet publish --configuration Release --output ./publish
 
     - name: Build Docker image
-      run: docker build -t swr.tr-west-1.myhuaweicloud.com/cloudtr/DemoWeb:latest .
+      run: docker build -t swr.tr-west-1.myhuaweicloud.com/cloudtr/demoweb:latest .
 
     - name: Log in to Huawei SWR
       run: docker login -u ${{secrets.SWR_USERNAME}} -p ${{secrets.SWR_PASSWORD}} swr.tr-west-1.myhuaweicloud.com 
 
     - name: Push Docker image
-      run: docker push swr.tr-west-1.myhuaweicloud.com/cloudtr/DemoWeb:latest
+      run: docker push swr.tr-west-1.myhuaweicloud.com/cloudtr/demoweb:latest
 
   deploy:
     runs-on: ubuntu-latest
@@ -43,7 +43,7 @@ jobs:
         ECS_HOST: ${{ secrets.ECS_HOST }}
         ECS_USER: ${{ secrets.ECS_USER }}
         ECS_PASSWORD: ${{ secrets.ECS_PASSWORD }}
-        SWR_IMAGE: swr.tr-west-1.myhuaweicloud.com/cloudtr/DemoWeb:latest
+        SWR_IMAGE: swr.tr-west-1.myhuaweicloud.com/cloudtr/demoweb:latest
       run: |
         sshpass -p $ECS_PASSWORD ssh -o StrictHostKeyChecking=no $ECS_USER@$ECS_HOST << EOF
           docker pull $SWR_IMAG
