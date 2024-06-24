@@ -46,8 +46,8 @@ jobs:
         SWR_IMAGE: swr.tr-west-1.myhuaweicloud.com/cloudtr/demoweb:latest
       run: |
         sshpass -p $ECS_PASSWORD ssh -o StrictHostKeyChecking=no $ECS_USER@$ECS_HOST << EOF
-          docker pull $SWR_IMAG
           docker stop DemoWeb || true
           docker rm DemoWeb || true
+          docker login -u ${{secrets.SWR_USERNAME}} -p ${{secrets.SWR_PASSWORD}} swr.tr-west-1.myhuaweicloud.com
           docker run --pull=always -d -p 80:8080 --name DemoWeb $SWR_IMAGE
         EOF
